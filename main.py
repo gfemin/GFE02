@@ -4,35 +4,20 @@ from telebot import types
 from gatet import Tele
 import os
 
-token = '8406430794:AAE2yHzMNiolhVjFclHkBgnL6Bnvv0bgTAA'
+token = '8522580555:AAG_1Dgmkdc980SFS9a75CzLrADVDUM3Zto'
 bot = telebot.TeleBot(token, parse_mode="HTML")
 
-# ====== /start ======
 @bot.message_handler(commands=["start"])
 def start(message):
-    if not (
-        str(message.chat.id) == '1915369904'
-        or str(message.chat.id) == '6815134572'
-    ):
-        bot.reply_to(
-            message,
-            "You cannot use the bot to contact developers to purchase a bot subscription @Rusisvirus"
-        )
+    if not str(message.chat.id) == '1915369904':
+        bot.reply_to(message, "You cannot use the bot to contact developers to purchase a bot subscription @Rusisvirus")
         return
-
     bot.reply_to(message, "Send the file now")
 
-# ====== DOCUMENT ======
 @bot.message_handler(content_types=["document"])
 def main(message):
-    if not (
-        str(message.chat.id) == '1915369904'
-        or str(message.chat.id) == '6815134572'
-    ):
-        bot.reply_to(
-            message,
-            "You cannot use the bot to contact developers to purchase a bot subscription @Rusisvirus"
-        )
+    if not str(message.chat.id) == '1915369904':
+        bot.reply_to(message, "You cannot use the bot to contact developers to purchase a bot subscription @Rusisvirus")
         return
     
     dd = 0
