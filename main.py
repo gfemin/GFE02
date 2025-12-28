@@ -41,7 +41,7 @@ def main(message):
             total = len(lino)
             
             for cc in lino:
-                cc = cc.strip() # Remove extra spaces/newlines
+                cc = cc.strip()
                 
                 # ===== STOP CHECK =====
                 if os.path.exists("stop.stop"):
@@ -49,7 +49,7 @@ def main(message):
                     os.remove('stop.stop')
                     return
                 
-                # ===== BIN LOOKUP (Safe Method) =====
+                # ===== BIN LOOKUP =====
                 try:
                     data = requests.get('https://bins.antipublic.cc/bins/'+cc[:6]).json()
                 except:
@@ -71,7 +71,7 @@ def main(message):
                 end_time = time.time()
                 execution_time = end_time - start_time
                 
-                # ===== DASHBOARD VIEW (OpenAI Style) =====
+                # ===== DASHBOARD VIEW =====
                 view_text = f"""\
 • <code>{cc}</code>
 
@@ -89,14 +89,18 @@ def main(message):
 
 • ᴛᴏᴛᴀʟ ➜ <code>[ {total} ]</code>
 """
-                # Single Stop Button
                 markup = types.InlineKeyboardMarkup(row_width=1)
                 markup.add(types.InlineKeyboardButton("⛔ sᴛᴏᴘ ⚠️", callback_data="stop"))
                 
-                bot.edit_message_text(chat_id=message.chat.id, message_id=ko, text=view_text, reply_markup=markup)
+                # 🔥 Message Edit Limit Logic 🔥
+                # Decline ၁၅ ကြိမ်ပြည့်မှ တစ်ခါ Edit မယ် (သို့) Hit မိရင် Edit မယ်
+                is_hit = 'Payment Successful' in last or 'funds' in last or 'security code' in last
                 
-                # ===== LOGIC & HIT SENDER (Original Style Restored) =====
-                print(last)
+                if is_hit or (dd % 15 == 0):
+                    bot.edit_message_text(chat_id=message.chat.id, message_id=ko, text=view_text, reply_markup=markup)
+                
+                # ===== LOGIC & HIT SENDER =====
+                print(f"{cc} -> {last}")
                 
                 if 'Payment Successful' in last:
                     ch += 1
@@ -117,6 +121,7 @@ def main(message):
                                     
                 elif 'security code is incorrect' in last or 'security code is invalid' in last:
                     ccn += 1
+                    bot.edit_message_text(chat_id=message.chat.id, message_id=ko, text=view_text, reply_markup=markup)
                     
                 elif 'funds' in last:
                     lowfund += 1
@@ -148,7 +153,8 @@ def main(message):
                         
                 else:
                     dd += 1
-                    time.sleep(3) # Wait a bit on declined to avoid flood limits
+                    # 🔥 TIME SLEEP FIXED 🔥
+                    time.sleep(1) # 3 စက္ကန့်ကနေ 1 စက္ကန့်ကို လျှော့လိုက်ပါပြီ
                     
     except Exception as e:
         print(e)
