@@ -8,15 +8,22 @@ token = '8406430794:AAE2yHzMNiolhVjFclHkBgnL6Bnvv0bgTAA'
 bot = telebot.TeleBot(token, parse_mode="HTML")
 
 # ==========================================
-# 👇 ဒီနေရာမှာ ID တွေကို ကော်မာ (,) ခံပြီး ထည့်ပါ
-# လက်ရှိ မင်း ID ထည့်ထားတယ်၊ နောက်ထပ် ၂ ခုကို နောက်မှာဖြည့်ပါ
-ALLOWED_IDS = ['1915369904', '6815134572', '1163809291'] 
-# ဥပမာ - ['1915369904', '567891234', '11223344']
+# 👇 ALLOWED_IDS (အပိုနေရာလွတ် ၄ ခု လုပ်ပေးထားတယ်)
+# နောက်မှ ID ထည့်ချင်ရင် 'ID_x_HERE' နေရာမှာ ဂဏန်းအစားထိုးလိုက်ပါ
+# မျက်တောင် '...' တွေနဲ့ ကော်မာ , တွေကို မဖျက်မိပါစေနဲ့
+
+ALLOWED_IDS = [
+    '1915369904',    # မင်းရဲ့ ID (Owner)
+    '7745508838',     # သူငယ်ချင်း (၁) အတွက် နေရာလွတ်
+    '6815134572',     # သူငယ်ချင်း (၂) အတွက် နေရာလွတ်
+    '1163809291',     # သူငယ်ချင်း (၃) အတွက် နေရာလွတ်
+    'ID_5_HERE'      # သူငယ်ချင်း (၄) အတွက် နေရာလွတ်
+] 
 # ==========================================
 
 @bot.message_handler(commands=["start"])
 def start(message):
-    # Logic ပြင်ထားပါတယ်: ဒီ List ထဲမှာ မပါရင် (not in) ပေးမသုံးဘူး
+    # List ထဲမှာမပါရင် (not in) ပေးမသုံးဘူး
     if str(message.chat.id) not in ALLOWED_IDS:
         bot.reply_to(message, "You cannot use the bot to contact developers to purchase a bot subscription @Rusisvirus")
         return
@@ -24,7 +31,6 @@ def start(message):
 
 @bot.message_handler(content_types=["document"])
 def main(message):
-    # Logic ပြင်ထားပါတယ်: ဒီ List ထဲမှာ မပါရင် (not in) ပေးမသုံးဘူး
     if str(message.chat.id) not in ALLOWED_IDS:
         bot.reply_to(message, "You cannot use the bot to contact developers to purchase a bot subscription @Rusisvirus")
         return
