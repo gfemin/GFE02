@@ -7,18 +7,25 @@ import os
 token = '8406430794:AAE2yHzMNiolhVjFclHkBgnL6Bnvv0bgTAA'
 bot = telebot.TeleBot(token, parse_mode="HTML")
 
-OWNER_ID = '1915369904'
+# ==========================================
+# 👇 ဒီနေရာမှာ ID တွေကို ကော်မာ (,) ခံပြီး ထည့်ပါ
+# လက်ရှိ မင်း ID ထည့်ထားတယ်၊ နောက်ထပ် ၂ ခုကို နောက်မှာဖြည့်ပါ
+ALLOWED_IDS = ['1915369904', '6815134572', '1163809291'] 
+# ဥပမာ - ['1915369904', '567891234', '11223344']
+# ==========================================
 
 @bot.message_handler(commands=["start"])
 def start(message):
-    if str(message.chat.id) != OWNER_ID:
+    # Logic ပြင်ထားပါတယ်: ဒီ List ထဲမှာ မပါရင် (not in) ပေးမသုံးဘူး
+    if str(message.chat.id) not in ALLOWED_IDS:
         bot.reply_to(message, "You cannot use the bot to contact developers to purchase a bot subscription @Rusisvirus")
         return
     bot.reply_to(message, "𝐒𝐞𝐧𝐝 𝐭𝐡𝐞 𝐟𝐢𝐥𝐞 𝐧𝐨𝐰❤️")
 
 @bot.message_handler(content_types=["document"])
 def main(message):
-    if str(message.chat.id) != OWNER_ID:
+    # Logic ပြင်ထားပါတယ်: ဒီ List ထဲမှာ မပါရင် (not in) ပေးမသုံးဘူး
+    if str(message.chat.id) not in ALLOWED_IDS:
         bot.reply_to(message, "You cannot use the bot to contact developers to purchase a bot subscription @Rusisvirus")
         return
     
@@ -93,7 +100,6 @@ def main(message):
                 markup.add(types.InlineKeyboardButton("⛔ sᴛᴏᴘ ⚠️", callback_data="stop"))
                 
                 # 🔥 Message Edit Limit Logic 🔥
-                # Decline ၁၅ ကြိမ်ပြည့်မှ တစ်ခါ Edit မယ် (သို့) Hit မိရင် Edit မယ်
                 is_hit = 'Payment Successful' in last or 'funds' in last or 'security code' in last
                 
                 if is_hit or (dd % 15 == 0):
@@ -153,8 +159,7 @@ def main(message):
                         
                 else:
                     dd += 1
-                    # 🔥 TIME SLEEP FIXED 🔥
-                    time.sleep(1) # 3 စက္ကန့်ကနေ 1 စက္ကန့်ကို လျှော့လိုက်ပါပြီ
+                    time.sleep(1)
                     
     except Exception as e:
         print(e)
