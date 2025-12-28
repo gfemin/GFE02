@@ -25,6 +25,31 @@ def start(message):
         return
     bot.reply_to(message, "𝐒𝐞𝐧𝐝 𝐭𝐡𝐞 𝐟𝐢𝐥𝐞 𝐧𝐨𝐰❤️")
 
+# 🔥 NEW FEATURE: Download Lives File 🔥
+@bot.message_handler(commands=["getlives"])
+def get_lives(message):
+    if str(message.chat.id) not in ALLOWED_IDS: return
+    
+    try:
+        if os.path.exists("lives.txt"):
+            with open("lives.txt", "rb") as f:
+                bot.send_document(message.chat.id, f, caption="✅ <b>Here are your Charged/Live Cards</b>", parse_mode="HTML")
+        else:
+            bot.reply_to(message, "No Live cards saved yet! ❌")
+    except Exception as e:
+        bot.reply_to(message, f"Error sending file: {e}")
+
+# 🔥 NEW FEATURE: Clear Lives File 🔥
+@bot.message_handler(commands=["clearlives"])
+def clear_lives(message):
+    if str(message.chat.id) not in ALLOWED_IDS: return
+    
+    if os.path.exists("lives.txt"):
+        os.remove("lives.txt")
+        bot.reply_to(message, "🗑️ <b>lives.txt has been cleared!</b>", parse_mode="HTML")
+    else:
+        bot.reply_to(message, "File is already empty.")
+
 @bot.message_handler(content_types=["document"])
 def main(message):
     if str(message.chat.id) not in ALLOWED_IDS:
@@ -45,9 +70,7 @@ def run_checker(message):
     
     chat_id = message.chat.id
     
-    # 🔥 NAME CONFLICT FIX 🔥
-    # ID ရော Time ပါထည့်လိုက်တဲ့အတွက် ဘယ်လိုမှ နာမည်မတူနိုင်တော့ဘူး
-    # combo_ID_TIME.txt (ဥပမာ: combo_191536_1712345.txt)
+    # NAME CONFLICT FIX
     file_name = f"combo_{chat_id}_{int(time.time())}.txt"
     stop_file = f"stop_{chat_id}.stop"
 
@@ -88,7 +111,7 @@ def run_checker(message):
                 
                 # ===== CHECKER WITH TIMEOUT =====
                 try:
-                    # 25 seconds timeout to prevent freeze
+                    # 25 seconds timeout
                     last = str(func_timeout(25, Tele, args=(cc,)))
                 except FunctionTimedOut:
                     last = 'Gateway Time Out ❌'
@@ -120,15 +143,19 @@ def run_checker(message):
                 markup = types.InlineKeyboardMarkup(row_width=1)
                 markup.add(types.InlineKeyboardButton("⛔ sᴛᴏᴘ ⚠️", callback_data="stop"))
                 
-                # Logic: Hit မိရင် (သို့) Decline ၁၅ ခုပြည့်ရင် Edit မယ်
                 is_hit = 'Payment Successful' in last or 'funds' in last or 'security code' in last
                 
                 if is_hit or (dd % 15 == 0):
                     bot.edit_message_text(chat_id=chat_id, message_id=ko, text=view_text, reply_markup=markup)
                 
-                # ===== HIT SENDER =====
+                # ===== HIT SENDER & SAVER =====
                 print(f"{chat_id} : {cc} -> {last}")
                 
+                # 🔥 SAVE TO FILE LOGIC 🔥
+                if 'Payment Successful' in last or 'funds' in last:
+                    with open("lives.txt", "a") as f:
+                        f.write(f"{cc} - {last} - {bank} ({country})\n")
+
                 if 'Payment Successful' in last:
                     ch += 1
                     msg = f''' 
@@ -182,7 +209,7 @@ def run_checker(message):
                     dd += 1
                     time.sleep(1)
         
-        # Cleanup
+        # Cleanup input file only
         if os.path.exists(file_name): os.remove(file_name)
         bot.edit_message_text(chat_id=chat_id, message_id=ko, text='𝑪𝒉𝒆𝒄𝒌𝒊𝒏𝒈 𝑫𝒐𝒏𝒆!\n𝑩𝒐𝒕 𝑩𝒚 ➜ @Rusisvirus')
 
