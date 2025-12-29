@@ -50,6 +50,9 @@ def clear_lives(message):
     else:
         bot.reply_to(message, "File is already empty.")
 
+# ==========================================
+# 📂 FILE CHECKER LOGIC STARTS HERE
+# ==========================================
 @bot.message_handler(content_types=["document"])
 def main(message):
     if str(message.chat.id) not in ALLOWED_IDS:
@@ -122,11 +125,26 @@ def run_checker(message):
                 end_time = time.time()
                 execution_time = end_time - start_time
                 
+                # 🔥 FIX: STATUS CLEANING (JSON ရှင်းထုတ်ခြင်း) 🔥
+                # ဒီနေရာမှာ Status ကို အရင်သန့်လိုက်မှ Dashboard မှာ အရှည်ကြီးမပေါ်မှာ
+                if "Payment Successful" in last:
+                    display_status = "Charged ✅"
+                elif "funds" in last:
+                    display_status = "Insufficient Funds 🍃"
+                elif "security code" in last:
+                    display_status = "CCN Live ✅"
+                elif "success" in last and "false" in last: # JSON Error Catch
+                    display_status = "Declined ❌"
+                elif "Stripe Error" in last or "declined" in last:
+                    display_status = "Declined ❌"
+                else:
+                    display_status = "Declined ❌"
+
                 # ===== DASHBOARD VIEW =====
                 view_text = f"""\
 • <code>{cc}</code>
 
-🟢 sᴛᴀᴛᴜs  ➜ <code>{last}</code>
+🟢 sᴛᴀᴛᴜs  ➜ <code>{display_status}</code>
 
 💳 ᴄʜᴀʀɢᴇᴅ  ➜ <code>[ {ch} ]</code>
 
@@ -143,21 +161,13 @@ def run_checker(message):
                 markup = types.InlineKeyboardMarkup(row_width=1)
                 markup.add(types.InlineKeyboardButton("⛔ sᴛᴏᴘ ⚠️", callback_data="stop"))
                 
-                is_hit = 'Payment Successful' in last or 'funds' in last or 'security code' in last
-                
-                if is_hit or (dd % 15 == 0):
-                    bot.edit_message_text(chat_id=chat_id, message_id=ko, text=view_text, reply_markup=markup)
-                
-                # ===== HIT SENDER & SAVER =====
-                print(f"{chat_id} : {cc} -> {last}")
-                
-                # 🔥 SAVE TO FILE LOGIC 🔥
-                if 'Payment Successful' in last or 'funds' in last:
-                    with open("lives.txt", "a") as f:
-                        f.write(f"{cc} - {last} - {bank} ({country})\n")
-
+                # Check Logic
                 if 'Payment Successful' in last:
                     ch += 1
+                    # Save Charge
+                    with open("lives.txt", "a") as f:
+                        f.write(f"{cc} - Charged ✅ - {bank} ({country})\n")
+                    
                     msg = f''' 
 𝐂𝐀𝐑𝐃: <code>{cc}</code>
 𝐑𝐞𝐬𝐩𝐨𝐧𝐬𝐞: <code>𝚂𝚞𝚌𝚌𝚎𝚜𝚜𝚏𝚞𝚕!🥵</code>
@@ -169,16 +179,13 @@ def run_checker(message):
 𝐓𝐢𝐦𝐞: <code>1{"{:.1f}".format(execution_time)} second</code> 
 𝐁𝐨𝐭 𝐀𝐛𝐨𝐮𝐭: @Rusisvirus'''
                     bot.reply_to(message, msg)
-                    
-                elif 'Your card does not support this type of purchase' in last:
-                    cvv += 1
-                                    
-                elif 'security code is incorrect' in last or 'security code is invalid' in last:
-                    ccn += 1
-                    bot.edit_message_text(chat_id=chat_id, message_id=ko, text=view_text, reply_markup=markup)
-                    
+                
                 elif 'funds' in last:
                     lowfund += 1
+                    # Save Low Funds
+                    with open("lives.txt", "a") as f:
+                        f.write(f"{cc} - Low Funds 🍃\n")
+                    
                     msg = f'''			
 𝐂𝐀𝐑𝐃: <code>{cc}</code>
 𝐑𝐞𝐬𝐩𝐨𝐧𝐬𝐞: <code>𝙸𝚗𝚜𝚞𝚏𝚏𝚒𝚌𝚒𝚎𝚗𝚝 𝚏𝚞𝚗𝚍𝚜 😂</code>
@@ -190,25 +197,24 @@ def run_checker(message):
 𝐓𝐢𝐦𝐞: <code>1{"{:.1f}".format(execution_time)} second</code> 
 𝐁𝐨𝐭 𝐀𝐛𝐨𝐮𝐭: @Rusisvirus'''
                     bot.reply_to(message, msg)
-                    
-                elif 'The payment needs additional action before completion!' in last:
+                
+                elif 'security code' in last:
+                    ccn += 1
+                elif 'action' in last or '3D' in last:
+                    # 3DS Logic
                     cvv += 1
-                    msg = f'''			
-𝐂𝐀𝐑𝐃: <code>{cc}</code>
-𝐑𝐞𝐬𝐩𝐨𝐧𝐬𝐞: <code>𝟹𝙳𝚂 👍</code>
-
-𝐁𝐢𝐧 𝐈𝐧𝐟𝐨: <code>{cc[:6]}-{card_type} - {brand}</code>
-𝐁𝐚𝐧𝐤: <code>{bank}</code>
-𝐂𝐨𝐮𝐧𝐭𝐫𝐲: <code>{country} - {country_flag}</code>
-
-𝐓𝐢𝐦𝐞: <code>1{"{:.1f}".format(execution_time)} second</code> 
-𝐁𝐨𝐭 𝐀𝐛𝐨𝐮𝐭: @Rusisvirus'''
-                    bot.reply_to(message, msg)
-                        
+                    with open("lives.txt", "a") as f:
+                        f.write(f"{cc} - 3DS ⚠️\n")
                 else:
                     dd += 1
-                    time.sleep(1)
-        
+                
+                # Update Dashboard every 15 cards or if hit found
+                if (ch + lowfund + ccn + cvv + dd) % 15 == 0 or 'Payment Successful' in last or 'funds' in last:
+                    bot.edit_message_text(chat_id=chat_id, message_id=ko, text=view_text, reply_markup=markup)
+                
+                # Console Log
+                print(f"{chat_id} : {cc} -> {display_status}")
+
         # Cleanup input file only
         if os.path.exists(file_name): os.remove(file_name)
         bot.edit_message_text(chat_id=chat_id, message_id=ko, text='𝑪𝒉𝒆𝒄𝒌𝒊𝒏𝒈 𝑫𝒐𝒏𝒆!\n𝑩𝒐𝒕 𝑩𝒚 ➜ @Rusisvirus')
