@@ -2,7 +2,6 @@ import requests, re
 import random
 import string  # Random စာလုံးတွေထုတ်ဖို့ ဒါလေးထပ်ထည့်ထားတယ်
 
-
 def Tele(ccx):
     ccx = ccx.strip()
     n = ccx.split("|")[0]
@@ -18,11 +17,12 @@ def Tele(ccx):
     random_amount1 = random.randint(1, 4)
     random_amount2 = random.randint(1, 99)
 
-    # 🔥 Random Email Logic 🔥
+    # 🔥 Random Email Logic (ဒီမှာစပြီး ပြင်ထားတယ်) 🔥
+    # စာလုံး ၁၂ လုံးပါတဲ့ Random နာမည်တစ်ခု ဖန်တီးမယ်
     letters = string.ascii_lowercase + string.digits
     random_name = ''.join(random.choice(letters) for i in range(12))
     random_email = f"{random_name}@gmail.com"
-    # =======================
+    # ==========================================
 
     headers = {
         'authority': 'api.stripe.com',
@@ -40,13 +40,7 @@ def Tele(ccx):
         'user-agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Mobile Safari/537.36',
     }
 
-    data = (
-        f'type=card&card[number]={n}&card[cvc]={cvc}'
-        f'&card[exp_month]={mm}&card[exp_year]={yy}'
-        f'&guid=NA&muid=NA&sid=NA'
-        f'&payment_user_agent=stripe.js%2Fc264a67020%3B+stripe-js-v3%2Fc264a67020%3B+card-element'
-        f'&key=pk_live_51HS2e7IM93QTW3d6EuHHNKQ2lAFoP1sepEHzJ7l1NWvDr7q2vEbmp3v5GM6gwdtgmO3HnEQ3JGeWtZJNXiNEd97M0067w1jUqv'
-    )
+    data = f'type=card&card[number]={n}&card[cvc]={cvc}&card[exp_month]={mm}&card[exp_year]={yy}&guid=NA&muid=NA&sid=NA&payment_user_agent=stripe.js%2Fc264a67020%3B+stripe-js-v3%2Fc264a67020%3B+card-element&key=pk_live_51HS2e7IM93QTW3d6EuHHNKQ2lAFoP1sepEHzJ7l1NWvDr7q2vEbmp3v5GM6gwdtgmO3HnEQ3JGeWtZJNXiNEd97M0067w1jUqv'
 
     response = requests.post(
         'https://api.stripe.com/v1/payment_methods',
