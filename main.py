@@ -232,4 +232,4 @@ while True:
         bot.polling(non_stop=True, timeout=20, long_polling_timeout=20)
     except Exception as e:
         print("Polling error:", e)
-        time.sle
+        time.sleep(5)
