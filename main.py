@@ -12,8 +12,8 @@ bot = telebot.TeleBot(token, parse_mode="HTML")
 # 👇 ALLOWED USERS LIST
 ALLOWED_IDS = [
     '1915369904',    # Owner
-    '6506125689',     # User 2
-    '7745508838',     # User 3
+    '1696442023',     # User 2
+    '',     # User 3
     '6815134572'      # User 4
 ]
 # ==========================================
@@ -112,7 +112,7 @@ def run_checker(message):
                 # ===== CHECKER WITH TIMEOUT =====
                 try:
                     # 25 seconds timeout
-                    last = str(func_timeout(25, Tele, args=(cc,)))
+                    last = str(func_timeout(70, Tele, args=(cc,)))
                 except FunctionTimedOut:
                     last = 'Gateway Time Out ❌'
                 except Exception as e:
@@ -232,4 +232,4 @@ while True:
         bot.polling(non_stop=True, timeout=20, long_polling_timeout=20)
     except Exception as e:
         print("Polling error:", e)
-        time.sleep(5)
+        time.sle
