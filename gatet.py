@@ -11,7 +11,7 @@ PROXY_HOST = 'geo.g-w.info'
 PROXY_PORT = '10080'
 
 # 🔥 မင်းပေးတဲ့ US Proxy (Virginia Beach) ကို ထည့်ထားသည်
-PROXY_USER = 'user-7xkEOw8bXcNNWHHW-type-residential-session-1091rf09-country-US-city-Virginia_Beach-rotation-15'
+PROXY_USER = 'user-7xkEOw8bXcNNWHHW-type-residential-session-zrs1mklz-country-US-city-Virginia_Beach-rotation-15'
 
 PROXY_PASS = 'CMvQFPYozpgFTlXC'
 # ==========================================
